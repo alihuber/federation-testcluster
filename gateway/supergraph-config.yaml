@@ -1,0 +1,6 @@
+federation_version: 2
+subgraphs:
+  users:
+    routing_url: http://users-service:4001/graphql
+    schema:
+      file: ../users/users.graphql

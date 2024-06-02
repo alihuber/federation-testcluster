@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: federation
+  name: users-service
+spec:
+  selector:
+    matchLabels:
+      name: users-service
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: users-service
+    spec:
+      containers:
+        - name: users-service
+          image: users-service:1
+          imagePullPolicy: 'Never'
+          ports:
+            - containerPort: 4001

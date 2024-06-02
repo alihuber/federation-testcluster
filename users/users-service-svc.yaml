@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: federation
+spec:
+  selector:
+    name: users-service
+  ports:
+    - protocol: TCP
+      port: 4001
+      targetPort: 4001
