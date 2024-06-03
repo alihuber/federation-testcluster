@@ -36,6 +36,7 @@ Start User-Service at least once, to make sure database migrations are working a
 ## Deploy gateway
 
 `cd gateway`  
+Make sure `HOST_IP` is altered in Dockerfile, this sets CORS for the gateway.   
 Make sure supergraph.graphql is created and build image:  
 `npm run compose-supergraph && docker build -t gateway:1 .`  
 `kubectl apply -f gateway-deployment.yaml`  
