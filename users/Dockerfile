@@ -12,7 +12,9 @@ COPY --chown=node:node . .
 
 ENV NODE_ENV=production
 
-ENV GATEWAY_ORIGIN=http://gateway:4000
+# switch between router and gateway
+# ENV GATEWAY_ORIGIN=http://gateway:4000
+ENV GATEWAY_ORIGIN=http://router:4000
 ENV DATABASE_URL="./database.sqlite"
 
 RUN npm ci --omit=dev

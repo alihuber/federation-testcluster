@@ -55,23 +55,49 @@ curl --request POST \
   --url 'http://127.0.0.1:61126/graphql' \
   --data '{"query":"query { user(userId: 1) { username } }"}'
 ```
-Alternatively expose via ingress, see next step  
+Alternatively expose via ingress, see step below   
 
-## Expose gateway via ingress and domain
+## Deploy Apollo router instead of gateway
+
+In gateway folder, make sure supergraph.graphql is created:  
+`npm run compose-supergraph`   
+Copy supergraphl.graphql to router folder  
+Make sure `GATEWAY_ORIGIN` is switched to `http://router:4000` in user-service's Dockerfile   
+Make sure host ip is whitelisted in `router.yaml`   
+`cd router`   
+`docker build -t router:1 .`   
+`kubectl apply -f router-deployment.yaml`   
+
+## Expose router service, query data
+
+First, expose the gateway deployment with a node port  
+`kubectl expose deployment router --type=NodePort --port=4000 -n federation`  
+Then expose it as a service to be reached from host system  
+`minikube service router --url -n federation`  
+Then this should return data:
+```bash
+curl --request POST \
+  --header 'content-type: application/json' \
+  --url 'http://127.0.0.1:61126/graphql' \
+  --data '{"query":"query { user(userId: 1) { username } }"}'
+```
+Alternatively expose via ingress, see step below   
+
+## Expose gateway/router via ingress and domain
 
 Enable ingress addon, wait a few minutes  
 `minikube addons enable ingress`  
 In a separate terminal, start minikube tunnel  
 `minikube tunnel`  
-Apply ingress config  
-`kubectl apply ingress.yaml`  
+Switch routed service in `ingress.yaml` to router or gateway, apply ingress config  
+`kubectl apply -f ingress.yaml`  
 This should not error:  
 `curl --resolve "hello-world.example:80:127.0.0.1" -i http://hello-world.example`  
 Add the line  
 `127.0.0.1 hello-world.example`  
 in /etc/hosts  
 
-Now the gateway can be queried like  
+Now the graph can be queried like  
 ```bash
 curl --request POST \
   --header 'content-type: application/json' \

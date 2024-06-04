@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: federation
+  name: router
+spec:
+  selector:
+    matchLabels:
+      name: router
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: router
+    spec:
+      containers:
+        - name: router
+          image: router:1
+          imagePullPolicy: "Never"
+          ports:
+            - containerPort: 4000
