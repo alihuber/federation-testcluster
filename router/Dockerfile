@@ -1,5 +1,6 @@
 # modified from
 # https://github.com/apollographql/router/blob/dev/dockerfiles/Dockerfile.router
+### download stage
 FROM debian:bookworm-slim AS downloader
 ARG ROUTER_RELEASE=latest
 
@@ -14,6 +15,7 @@ WORKDIR /dist
 # Run the Router downloader which puts Router into current working directory
 RUN curl -sSL https://router.apollo.dev/download/nix/${ROUTER_RELEASE}/ | sh
 
+### run stage
 FROM debian:bookworm-slim AS distro
 # Add a user to run the router as
 RUN useradd -m router
@@ -44,12 +46,7 @@ ENV APOLLO_ROUTER_CONFIG_PATH="/dist/config/router.yaml"
 RUN \
   echo '#!/usr/bin/env bash \
   \nset -e \
-  \n \
-  \nif [ -f "/usr/bin/heaptrack" ]; then \
-  \n    exec heaptrack -o /dist/data/router_heaptrack /dist/router "$@" \
-  \nelse \
-  \n    exec /dist/router --config /dist/config/router.yaml -s /dist/schema/supergraph.graphql "$@" \
-  \nfi \
+  \nexec /dist/router --config /dist/config/router.yaml -s /dist/schema/supergraph.graphql "$@" \
   ' > /dist/router_wrapper.sh
 
 # Make sure we can run our wrapper
