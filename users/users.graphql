@@ -4,13 +4,13 @@
 # -----------------------------------------------
 
 type Query {
-  user(userId: Int!): User
+  user(username: String!): User
 }
 
 type User {
   createdAt: String!
-  email: String!
   id: ID!
+  password: String!
   updatedAt: String!
   username: String!
 }

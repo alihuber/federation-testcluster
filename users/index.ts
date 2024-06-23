@@ -5,17 +5,26 @@ import { expressMiddleware } from '@apollo/server/express4';
 import cors from 'cors';
 import express from 'express';
 import http from 'http';
-import { AppDataSource } from './src/data-source.js';
 import UsersResolver from './src/resolvers/UsersResolver.js';
 import { getLogger } from './src/utils/Logger.js';
 import { buildFederatedSchema } from './src/utils/buildFederatedSchema.js';
 import seedUsers from './src/utils/seedUsers.js';
+import { ProdDataSource } from './src/ProdDataSource.js';
+import { DevDataSource } from './src/DevDataSource.js';
 
 const logger = getLogger('Users');
 
-const conn = await AppDataSource.initialize();
+const isProduction = process.env['NODE_ENV'] === 'production';
+
+let databaseConnection;
+
+if (isProduction) {
+  databaseConnection = await ProdDataSource.initialize();
+} else {
+  databaseConnection = await DevDataSource.initialize();
+}
 const app = express();
-await conn.runMigrations();
+await databaseConnection.runMigrations();
 app.use(bodyParser.json());
 
 app.use(

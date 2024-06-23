@@ -42,15 +42,15 @@ enum link__Purpose {
 type Query
   @join__type(graph: USERS)
 {
-  user(userId: Int!): User
+  user(username: String!): User
 }
 
 type User
   @join__type(graph: USERS)
 {
   createdAt: String!
-  email: String!
   id: ID!
+  password: String!
   updatedAt: String!
   username: String!
 }

@@ -7,10 +7,10 @@ const logger = getLogger('UsersResolver');
 @Resolver((_of) => User)
 export default class AccountsResolver {
   @Query(() => User, { nullable: true })
-  async user(@Arg('userId', () => Int) userId: number): Promise<User | null> {
+  async user(@Arg('username', () => String) username: string): Promise<User | null> {
     logger.debug({
-      message: `Got user request for user ${userId}`,
+      message: `Got user request for user ${username}`,
     });
-    return User.findOneBy({ id: userId });
+    return User.findOneBy({ username });
   }
 }
