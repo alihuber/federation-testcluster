@@ -21,6 +21,31 @@ To be able to deploy local images (`https://minikube.sigs.k8s.io/docs/handbook/p
 This alters the current `docker` command in this shell. To reset docker-env:   
 `unset $(env | grep DOCKER | awk -F'=' '{print $1}' | xargs)`  
 
+## Setup databases
+ssh into minikube node and create data directories, those will be mounted by the volumes into the container:  
+`minikube ssh`  
+`sudo mkdir /mnt/data/`  
+`sudo mkdir /mnt/data/pg`  
+All files related to databases reside in the 'data' directory.  
+How to see env variables in any of the pods?  
+`kubectl -n federation exec pg-pod env`
+
+### Setup postgres
+Apply claim and volume files:  
+`kubectl apply -f pg-volume.yaml`  
+`kubectl apply -f pg-claim.yaml`  
+This will setup a 400mb volume claim that will mount the pg data directory into `/mnt/data/pg` within the kubernetes node.  
+Then apply the pod and service files to expose the database to services:  
+`kubectl apply -f postgres.yaml`  
+`kubectl apply -f pg-svc.yaml`  
+
+Now check again with `minikube ssh`, there should be postgres data in `/mnt/data/pg`  
+
+Now create the database used by the services below. Either ssh into the pod or use the dashboard:  
+`kubectl exec -n federation --stdin --tty pg-pod -- /bin/bash`  
+`psql -U postgres`  
+`CREATE DATABASE federation;`  
+
 ## Deploy users service
 
 Start User-Service at least once, to make sure database migrations are working and file users.graphql is created:   
@@ -33,10 +58,10 @@ Start User-Service at least once, to make sure database migrations are working a
 `kubectl apply -f users-service-svc.yaml`  
 `cd ..`  
 
-## Deploy gateway
+## Deploy and expose via gateway
 
 `cd gateway`  
-Make sure `HOST_IP` is altered in Dockerfile, this sets CORS for the gateway.   
+Make sure `HOST_IP` is set to the host computers IP in Dockerfile, this sets CORS for the gateway.   
 Make sure supergraph.graphql is created and build image:  
 `npm run compose-supergraph && docker build -t gateway:1 .`  
 `kubectl apply -f gateway-deployment.yaml`  
@@ -53,7 +78,7 @@ Then this should return data:
 curl --request POST \
   --header 'content-type: application/json' \
   --url 'http://127.0.0.1:61126/graphql' \
-  --data '{"query":"query { user(userId: 1) { username } }"}'
+  --data '{"query":"query { user(username: \"testuser1\") { id } }"}'
 ```
 Alternatively expose via ingress, see step below   
 
@@ -63,7 +88,7 @@ In gateway folder, make sure supergraph.graphql is created:
 `npm run compose-supergraph`   
 Copy supergraphl.graphql to router folder  
 Make sure `GATEWAY_ORIGIN` is switched to `http://router:4000` in user-service's Dockerfile   
-Make sure host ip is whitelisted in `router.yaml`   
+Make sure host IP is whitelisted in `router.yaml`   
 `cd router`   
 `docker build -t router:1 .`   
 `kubectl apply -f router-deployment.yaml`   
@@ -79,12 +104,13 @@ Then this should return data:
 curl --request POST \
   --header 'content-type: application/json' \
   --url 'http://127.0.0.1:61126/graphql' \
-  --data '{"query":"query { user(userId: 1) { username } }"}'
+  --data '{"query":"query { user(username: \"testuser1\") { id } }"}'
 ```
 Alternatively expose via ingress, see step below   
 
 ## Expose gateway/router via ingress and domain
 
+Make sure the deployment is exposed via NodePort, see above.  
 Enable ingress addon, wait a few minutes  
 `minikube addons enable ingress`  
 In a separate terminal, start minikube tunnel  
@@ -102,15 +128,19 @@ Now the graph can be queried like
 curl --request POST \
   --header 'content-type: application/json' \
   --url 'http://hello-world.example/graphql' \
-  --data '{"query":"query { user(userId: 1) { username } }"}'
+  --data '{"query":"query { user(username: \"testuser1\") { id } }"}'
 ```
 
 ## Cleanup
+Delete deployments, pods and services:  
 `kubectl delete all --all -n federation`  
 `kubectl delete ingress example-ingress -n federation`  
 `kubectl get all -A` should only display stuff from ingress-nginx, kube-system and kubernetes-dashboard namespaces  
+Delete volumes and claims:  
+`kubectl delete pvc pg-claim -n federation`  
+`kubectl delete pv pg-volume -n federation`  
 Delete images:  
-`docker image rm <image id>`  
+`docker rmi <image id> <image id>`  
 Stop minikube:  
 `minikube stop`  
 Reset docker-env:  
