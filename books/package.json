@@ -1,0 +1,40 @@
+{
+  "name": "books",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && npm run start",
+    "start": "node ./dist/index.js",
+    "build": "rimraf ./dist && tsc"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.10.4",
+    "@apollo/subgraph": "^2.8.0",
+    "@graphql-tools/utils": "^10.2.1",
+    "body-parser": "^1.20.2",
+    "class-validator": "^0.14.1",
+    "cors": "^2.8.5",
+    "graphql": "^16.8.1",
+    "graphql-scalars": "1.23.0",
+    "graphql-tag": "^2.12.6",
+    "mongodb": "^6.7.0",
+    "mongoose": "^8.4.3",
+    "reflect-metadata": "^0.2.2",
+    "type-graphql": "^2.0.0-rc.1",
+    "rimraf": "^5.0.7",
+    "uuid": "^9.0.1",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/graphql-depth-limit": "^1.1.6",
+    "@types/node": "^20.13.0",
+    "@types/validator": "^13.11.10",
+    "class-validator": "^0.14.1",
+    "npm-check-updates": "^16.14.20",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
