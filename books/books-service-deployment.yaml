@@ -2,20 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: federation
-  name: users-service
+  name: books-service
 spec:
   selector:
     matchLabels:
-      name: users-service
+      name: books-service
   replicas: 1
   template:
     metadata:
       labels:
-        name: users-service
+        name: books-service
     spec:
       containers:
-        - name: users-service
-          image: users-service:1
+        - name: books-service
+          image: books-service:1
           imagePullPolicy: 'Never'
           ports:
-            - containerPort: 4001
+            - containerPort: 4002

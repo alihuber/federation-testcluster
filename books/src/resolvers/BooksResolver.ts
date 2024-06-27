@@ -9,7 +9,7 @@ const logger = getLogger('BooksResolver');
 export default class BooksResolver {
   @Query(() => [Book], { nullable: true })
   async allBooks(): Promise<Array<Book> | null> {
-    logger.debug({
+    logger.info({
       message: 'got all books request',
     });
     const found: unknown = await BookModel.find({}, null, {
