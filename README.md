@@ -46,6 +46,31 @@ Now create the database used by the services below. Either ssh into the pod or u
 `psql -U postgres`  
 `CREATE DATABASE federation;`  
 
+### Setup mongodb
+Apply claim and volume files:  
+`kubectl apply -f mongo-volume.yaml`  
+`kubectl apply -f mongo-claim.yaml`  
+This will setup a 400mb volume claim that will mount the mongodb data directory into `/mnt/data/mongo` within the kubernetes node.  
+Then apply the pod and service files to expose the database to services:  
+`kubectl apply -f mongo.yaml`  
+`kubectl apply -f mongo-svc.yaml`  
+
+Now check again with `minikube ssh`, there should be data in `/mnt/data/mongo`  
+
+Now create the database used by the services below. Either ssh into the pod or use the dashboard:  
+`kubectl exec -n federation --stdin --tty mongo-pod -- /bin/bash`  
+`mongosh --authenticationDatabase "admin" -u "admin" -p "admin"`  
+```javascript
+use federation
+db.createUser(
+  {
+    user: "federationuser",  
+    pwd:  "federationpw",  
+    roles: [ { role: "readWrite", db: "federation" } ]
+  }
+)
+```
+
 ## Deploy users service
 
 Start User-Service at least once, to make sure database migrations are working and file users.graphql is created:   
@@ -56,6 +81,18 @@ Start User-Service at least once, to make sure database migrations are working a
 
 `kubectl apply -f users-service-deployment.yaml`  
 `kubectl apply -f users-service-svc.yaml`  
+`cd ..`  
+
+## Deploy books service
+
+Start Book-Service at least once, to make sure database migrations are working and file books.graphql is created:   
+`cd books && npm run dev`  
+`docker build -t books-service:1 .`  
+
+`docker images` should now display kubernetes stuff and books-service image    
+
+`kubectl apply -f books-service-deployment.yaml`  
+`kubectl apply -f books-service-svc.yaml`  
 `cd ..`  
 
 ## Deploy and expose via gateway
@@ -95,7 +132,7 @@ Make sure host IP is whitelisted in `router.yaml`
 
 ## Expose router service, query data
 
-First, expose the gateway deployment with a node port  
+First, expose the router deployment with a node port  
 `kubectl expose deployment router --type=NodePort --port=4000 -n federation`  
 Then expose it as a service to be reached from host system  
 `minikube service router --url -n federation`  
@@ -139,7 +176,9 @@ Delete deployments, pods and services:
 Delete volumes and claims:  
 `kubectl delete pvc pg-claim -n federation`  
 `kubectl delete pv pg-volume -n federation`  
-Delete images:  
+`kubectl delete pvc mongo-claim -n federation`  
+`kubectl delete pv mongo-volume -n federation`  
+Delete images of built images:  
 `docker rmi <image id> <image id>`  
 Stop minikube:  
 `minikube stop`  
