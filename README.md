@@ -168,6 +168,26 @@ curl --request POST \
   --data '{"query":"query { user(username: \"testuser1\") { id } }"}'
 ```
 
+## Query the supergraph
+The supergraph has a demo implementation of reference resolvers with type-graphql. To make it work the data in the 2 databases has somehow to be wired up. The services will generate 2 users and 2 books, and users are embedded within the book model as the `author` field. To connect those to be resolved: Obtain the id for both users with the query above, then use mongosh to update the book data, e.g.:  
+```javascript
+db.books.updateOne({ _id: ObjectId('667c2fdfc175f666f80b2db2') }, { $set: { author: { id: 7 } } })
+```
+Then the supergraph should be able to resolve refrerences. Open `http://hello-world.example/graphql` and try it out:
+```graphql
+query ExampleQuery {
+  allBooks {
+    _id
+    content
+    author {
+      id
+      username
+    }
+  }
+}
+```
+
+
 ## Cleanup
 Delete deployments, pods and services:  
 `kubectl delete all --all -n federation`  

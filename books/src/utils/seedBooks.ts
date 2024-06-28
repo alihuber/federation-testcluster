@@ -10,6 +10,7 @@ const seedBooks = async () => {
     await BookModel.create({
       title: 'Test Book 1',
       content: 'some content 1',
+      author: { id: 1 },
     });
   } else {
     logger.info(`book 1 found: ${foundBook1._id}, created at: ${foundBook1.createdAt}`);
@@ -21,6 +22,7 @@ const seedBooks = async () => {
     await BookModel.create({
       title: 'Test Book 2',
       content: 'some content 2',
+      author: { id: 2 },
     });
   } else {
     logger.info(`book 2 found: ${foundBook2._id}, created at: ${foundBook2.createdAt}`);

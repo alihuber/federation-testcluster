@@ -4,3 +4,7 @@ subgraphs:
     routing_url: http://users-service:4001/graphql
     schema:
       file: ../users/users.graphql
+  books:
+    routing_url: http://books-service:4002/graphql
+    schema:
+      file: ../books/books.graphql

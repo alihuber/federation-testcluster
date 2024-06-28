@@ -4,4 +4,5 @@ export default interface BookInterface {
   updatedAt: Date;
   title: string;
   content: string;
+  author: { id: number };
 }

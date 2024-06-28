@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Field, ObjectType, Directive, ID } from 'type-graphql';
+import User from '../entities/User.js';
 
 @Directive(`@key(fields: "_id")`)
 @ObjectType()
@@ -18,4 +19,7 @@ export default class Book {
 
   @Field(() => String)
   content!: string;
+
+  @Field(() => User)
+  author!: User;
 }

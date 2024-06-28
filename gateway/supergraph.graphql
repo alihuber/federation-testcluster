@@ -19,9 +19,25 @@ directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on
 
 directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
+type Book
+  @join__type(graph: BOOKS, key: "_id")
+{
+  _id: ID!
+  author: User!
+  content: String!
+  createdAt: String!
+  title: String!
+  updatedAt: String!
+}
+
+scalar FieldSet
+  @join__type(graph: BOOKS)
+  @join__type(graph: USERS)
+
 scalar join__FieldSet
 
 enum join__Graph {
+  BOOKS @join__graph(name: "books", url: "http://books-service:4002/graphql")
   USERS @join__graph(name: "users", url: "http://users-service:4001/graphql")
 }
 
@@ -40,17 +56,19 @@ enum link__Purpose {
 }
 
 type Query
+  @join__type(graph: BOOKS)
   @join__type(graph: USERS)
 {
-  user(username: String!): User
+  allBooks: [Book!] @join__field(graph: BOOKS)
+  user(username: String!): User @join__field(graph: USERS)
 }
 
 type User
-  @join__type(graph: USERS)
+  @join__type(graph: BOOKS, key: "id", resolvable: false)
+  @join__type(graph: USERS, key: "id")
 {
-  createdAt: String!
   id: ID!
-  password: String!
-  updatedAt: String!
-  username: String!
+  createdAt: String! @join__field(graph: USERS)
+  updatedAt: String! @join__field(graph: USERS)
+  username: String! @join__field(graph: USERS)
 }
