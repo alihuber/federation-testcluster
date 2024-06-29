@@ -187,6 +187,20 @@ query ExampleQuery {
 }
 ```
 
+## Simulate autoscaling
+Generating load ist achieved with `artillery.js`. Just run `npm i -g artillery@latest`, then `artillery run loadtest.yaml` to see requests generated.  
+To see resource uitilization of the pods run `kubectl top pod -n federation`  
+```
+books-service-9459cc495-2hn78   1m           63Mi            
+mongo-pod                       8m           206Mi           
+pg-pod                          1m           34Mi            
+router-6b5d898c4b-6rtfr         1m           180Mi           
+users-service-cf4985764-dsmsv   1m           61Mi            
+```
+To see autoscaling depending on CPU usage make sure the deployments have cpu requests/limits defined, otherwise the metrics server can't detect CPU data. Then run  
+`kubectl create -f autoscale.yaml -n federation`  
+to create autoscaling to 2 user-service instances when CPU usage rises above 20% = 200 millicores. Then run artillery again, after a while there should be another user-service pod in the kubernetes dashboard.  
+
 
 ## Cleanup
 Delete deployments, pods and services:  
@@ -198,6 +212,8 @@ Delete volumes and claims:
 `kubectl delete pv pg-volume -n federation`  
 `kubectl delete pvc mongo-claim -n federation`  
 `kubectl delete pv mongo-volume -n federation`  
+Delete horizontal pod autoscaler:  
+`kubectl delete hpa load-test -n federation`  
 Delete images of built images:  
 `docker rmi <image id> <image id>`  
 Stop minikube:  

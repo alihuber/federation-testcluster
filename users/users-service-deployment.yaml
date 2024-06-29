@@ -17,5 +17,10 @@ spec:
         - name: users-service
           image: users-service:1
           imagePullPolicy: 'Never'
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 500m 
           ports:
             - containerPort: 4001
