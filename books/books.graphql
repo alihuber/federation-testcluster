@@ -19,7 +19,7 @@ type Book @key(fields: "_id") {
 }
 
 type Query {
-  allBooks: [Book!]
+  allBooks(timeout: Boolean = false): [Book!]
 }
 
 type User @key(fields: "id", resolvable: false) {
